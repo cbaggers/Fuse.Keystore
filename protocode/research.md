@@ -1,4 +1,4 @@
-# Android
+# Android - warning androids use of CA is confusing
 
 https://developer.android.com/training/articles/security-ssl.html#ClientCert
 
@@ -149,6 +149,8 @@ iOS will shit itself if you try and use the apis from multiple threads
 at the same time.
 
 # Windows c++ (WinCrypt)
+
+
 
 # wat
 
