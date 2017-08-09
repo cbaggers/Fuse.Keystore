@@ -23,7 +23,7 @@ the server certificate directly.
 A storage facility for cryptographic keys and certificates.
 
 stores entries of 3 kinds:
-- KeyStore.PrivateKeyEntry 
+- KeyStore.PrivateKeyEntry
 - KeyStore.SecretKeyEntry
 - KeyStore.TrustedCertificateEntry (trusted public key)
 
@@ -91,7 +91,11 @@ DER file is unencypted by PKCS is meant to be secure and can be loaded into the 
 
 The opaque SecCertificateRef type seems to be what is used most places in the api (except for exchange format naturally)
 
-## Keychain 
+## Certificate extensions
+
+Additional information and conditions, like acceptable uses for the public key
+
+## Keychain
 
 Can store the following in the keychain:
 - Certificate
@@ -105,11 +109,40 @@ https://developer.apple.com/documentation/security/certificate_key_and_trust_ser
 seems to be simple queries to add and get entries. Also allows labels
 which may match up with android's aliases
 
-## Certificate extensions
+https://developer.apple.com/documentation/security/certificate_key_and_trust_services/certificates/examining_a_certificate
+reading a cert is what you would expect.
 
-Additional information and conditions, like acceptable uses for the public key
+## Key
+
+'A string of bytes that you combine with other data in specialized mathematical operations to enhance security'
+
+can store in keystore (surprise!), calc public key from private, convert to nsdata, etc
+
+https://developer.apple.com/documentation/security/certificate_key_and_trust_services/keys/storing_keys_in_the_keychain
+like certs the process for storing & retrieving keys is a query
+against the store. In both of these it seems possible to have
+duplicate names so we should search first and soft fail if dup found
+
+## Identity
+
+No surprises here given the above
+
+## Policies
+
+For a certificate that is deemed intact and valid (because the chain
+of signatures is unbroken back to a trusted root certificate), you
+evaluate it against a set of rules known as a trust policy. The policy
+indicates how particular fields or extensions of a certificate affect
+whether it should be trusted for a particular use.
+
+Standard is X509 or SSL but you could create your own policy. We wont
+be expose this yet
+
+## Trust
+
+
+# Windows c++ (WinCrypt)
 
 # wat
 
 private key -v- secret key
-
