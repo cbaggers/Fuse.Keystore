@@ -140,6 +140,13 @@ be expose this yet
 
 ## Trust
 
+By checking a cert for validity according to CA chain then *and*
+validating using a policy you get a Trust object.
+
+## Threading
+
+iOS will shit itself if you try and use the apis from multiple threads
+at the same time.
 
 # Windows c++ (WinCrypt)
 
