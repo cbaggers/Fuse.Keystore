@@ -268,6 +268,10 @@ https://msdn.microsoft.com/en-us/library/system.security.cryptography.x509certif
 
 Gonna have to piece all this together from the reference docs. What a pain the the gooch
 
+Ah maybe this will help https://docs.microsoft.com/en-us/dotnet/standard/security/cryptography-model
+
+Still blown away that their c++ docs are better than their c# ones.
+
 # wat
 
 private key -v- secret key
