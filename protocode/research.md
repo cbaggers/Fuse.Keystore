@@ -257,6 +257,17 @@ CertOpenSystemStore opens the default store (other stores are probably outside s
 I've been reading this for an hour, sumarising it is hard. Will defer for now
 https://msdn.microsoft.com/en-us/library/aa380252.aspx#base_cryptography_functions
 
+# c#
+
+The docs here are fucking shite
+
+https://msdn.microsoft.com/en-us/library/system.security.cryptography.x509certificates.x509certificate.aspx
+https://msdn.microsoft.com/en-us/library/system.net.security.sslstream(v=vs.110).aspx
+https://msdn.microsoft.com/en-us/library/system.net.security.remotecertificatevalidationcallback(v=vs.110).aspx
+https://msdn.microsoft.com/en-us/library/system.security.cryptography.x509certificates.x509store(v=vs.110).aspx
+
+Gonna have to piece all this together from the reference docs. What a pain the the gooch
+
 # wat
 
 private key -v- secret key
