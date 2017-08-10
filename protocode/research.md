@@ -165,6 +165,15 @@ Each CSP has a key database.
 
 Don't make decisions assuming how CSPs behave (size of keys etc).
 
+CSP handles are reference counted
+
+CSPs have a type called a 'Provider Type' these can be queried with
+CryptEnumProviderTypes
+
+CSPs can be queried for what operations they support (and other
+details). These can be manipulated with CryptGetProvParam &
+CryptSetProvParam.
+
 ## CSP key database
 
 The database has containers.
@@ -193,6 +202,8 @@ function.
 
 CryptGenKey is commonly used with the CRYPT_EXPORTABLE parameter as
 this lets be used on other machines/sessions.
+
+Keys also have params which can be get/set via CryptGetKeyParam/CryptSetKeyParam
 
 ## Context
 
@@ -224,7 +235,27 @@ CryptEncrypt takes the following
 - &ref to size of resulting data
 - number of bytes to encrypt
 
-Decrypt very similar. Not gonan go in to this here
+CryptDecrypt very similar. Not gonna go in to this here
+
+Also the CryptProtectData functions seem useful as you can run them on
+any DATA_BLOB object, which might be easier to wrap in an uno'y kind
+of way
+
+## Object Encoding/Decoding
+
+certificates, certificate revocation lists (CRLs), certificate requests,
+and certificate extensions can be encoded and decoded.
+
+## Certificate Store
+
+CertOpenSystemStore opens the default store (other stores are probably outside scope for v1)
+
+'Collection Certificate Stores' are a thing, dont mix em up with containers
+
+## MOOOORE
+
+I've been reading this for an hour, sumarising it is hard. Will defer for now
+https://msdn.microsoft.com/en-us/library/aa380252.aspx#base_cryptography_functions
 
 # wat
 
