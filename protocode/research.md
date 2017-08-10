@@ -150,7 +150,81 @@ at the same time.
 
 # Windows c++ (WinCrypt)
 
+Has 'Cryptography Service Providers' (CSPs) which provide the crypto operations.
 
+- Message is used to refer to any piece of data
+- Plain text is used to refer to data that has not been encrypted.
+- Cipher text refers to data that has been encrypted.
+- hashing/hash" refers to the method used to derive a numeric value from a piece of data
+
+## CSPs
+
+At least one is provided with windows.
+
+Each CSP has a key database.
+
+Don't make decisions assuming how CSPs behave (size of keys etc).
+
+## CSP key database
+
+The database has containers.
+
+The container has a unique name.
+
+Generally, a default key container is created for each user.
+This key container takes the user's logon name as its own name.
+They contain all the key pairs belonging to that user.
+
+Applications can also create its own key container (and key pairs),
+which they usually name after themselves.
+
+## Keys
+
+can be persistent or session keys. Naturally, the former are persisted
+in a CSP database container. The latter are not.
+
+Apps can save session keys into application space in the form of an
+encrypted key binary large object or key blob using the CryptExportKey
+function.
+
+- CryptDeriveKey generates a key from a specified password.
+- CryptGenKey generates a key from random generated data.
+- CryptDestroyKey releases the handle to the key object.
+
+CryptGenKey is commonly used with the CRYPT_EXPORTABLE parameter as
+this lets be used on other machines/sessions.
+
+## Context
+
+CryptAcquireContext queries for both a CSP and a container within that
+CSP. If successful (result code != 0) you get the handle to this
+container.
+
+This function is also reused to do *other stuff* based on an action
+field (so creating & destroying containers for example)
+
+CryptReleaseContext releases the handle.
+
+## Hashing
+
+- CryptCreateHash returns a handle to a CSP hash object
+- CryptGetHashParam retrieves the hash value from the hash object (behavior is determined by a flag)
+- CryptDestroyHash releases the handle returned from CryptCreateHash (Should really be called CryptReleaseHash or something)
+- CryptHashData hash some data
+
+## Encryption & Decryption
+
+CryptEncrypt takes the following
+- handle to `key`
+- optional handle to `hash` object
+- the 'last block' flag. A bool that should only be set true for the last block
+- flag
+- pointer to data to encrypt or null if you just want to compute the
+  size of the resulting data
+- &ref to size of resulting data
+- number of bytes to encrypt
+
+Decrypt very similar. Not gonan go in to this here
 
 # wat
 
