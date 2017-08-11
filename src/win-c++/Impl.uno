@@ -4,7 +4,7 @@ using Uno.Collections;
 
 namespace Fuse.Security
 {
-    extern(!android && !iOS && !MSVC12) static class KeyStore
+    extern(MSVC12) static class KeyStore
     {
         static public void Init() {}
         static public Certificate GetSomething(string name) { return null; }
