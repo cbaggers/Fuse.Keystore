@@ -26,7 +26,7 @@ namespace Fuse.Security
 
         public object Something(Context c, object[] args)
         {
-            KeyStore.GetSomething();
+            KeyStore.GetSomething((string)args[0]);
             return null;
         }
     }

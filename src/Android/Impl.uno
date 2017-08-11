@@ -16,7 +16,7 @@ namespace Fuse.Security
         static public void Init() {}
 
         [Foreign(Language.Java)]
-        static public void GetSomething()
+        static public Certificate GetSomething(string name)
         @{
         @}
     }
