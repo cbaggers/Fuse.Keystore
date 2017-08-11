@@ -7,6 +7,6 @@ namespace Fuse.Security
     extern(!Mobile) static class KeyStore
     {
         static public void Init() {}
-        static public Certificate GetSomething(string name) {}
+        static public Certificate GetSomething(string name) { return null; }
     }
 }
