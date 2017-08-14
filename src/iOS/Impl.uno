@@ -38,13 +38,13 @@ namespace Fuse.Security
     {
         static public void Init() {}
 
-        static public Certificate GetSomething(string name)
+        static public Certificate GetCertificate(string name)
         {
-            return new iOSCert(GetSomethingImpl(name));
+            return new iOSCert(GetCertificateImpl(name));
         }
 
         [Foreign(Language.ObjC)]
-        static public SecCertRef GetSomethingImpl(string name)
+        static public SecCertRef GetCertificateImpl(string name)
         @{
             NSDictionary *getquery =
                 @{ (id)kSecClass:     (id)kSecClassCertificate,
