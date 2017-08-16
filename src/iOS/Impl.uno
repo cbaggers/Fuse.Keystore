@@ -5,6 +5,7 @@ using Uno.Permissions;
 using Fuse.Scripting;
 using Uno.Collections;
 using Uno.Compiler.ExportTargetInterop;
+using Uno.Threading;
 
 namespace Fuse.Security
 {
@@ -34,13 +35,28 @@ namespace Fuse.Security
     }
 
     [Require("Entity","SecCertRef")]
-    extern(iOS) static class KeyStore
+    extern(iOS)
+    internal class GetCertificateFromKeyStore : Promise<Certificate>
     {
-        static public void Init() {}
-
-        static public Certificate GetCertificate(string name)
+        public GetCertificateFromKeyStore(string name)
         {
-            return new iOSCert(GetCertificateImpl(name));
+            if (name == null)
+            {
+                Reject(new Exception("GetCertificateFromKeyStore requires that the certificate name is provided"));
+            }
+            else
+            {
+                var foo = GetCertificateImpl(name);
+                if (foo!=null)
+                {
+                    Resolve(new iOSCert(GetCertificateImpl(name)));
+                }
+                else
+                {
+                    Reject(new Exception("Could not aquire certificate with name '" + name));
+                }
+            }
+
         }
 
         [Foreign(Language.ObjC)]

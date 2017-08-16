@@ -18,15 +18,13 @@ namespace Fuse.Security
             if (_instance != null) return;
             _instance = this;
 
-            KeyStore.Init();
-
             AddMember(new NativeFunction("something", (NativeCallback)Something));
             Resource.SetGlobalKey(_instance, "FuseJS/KeyStore");
         }
 
         public object Something(Context c, object[] args)
         {
-            KeyStore.GetCertificate((string)args[0]);
+            var foo = new GetCertificateFromKeyStore((string)args[0]);
             return null;
         }
     }

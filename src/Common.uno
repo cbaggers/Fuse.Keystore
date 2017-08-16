@@ -8,5 +8,8 @@ using Uno.Compiler.ExportTargetInterop;
 
 namespace Fuse.Security
 {
-    public interface Certificate {}
+    public interface Certificate
+    {
+        //bool IsValid { get; }
+    }
 }
