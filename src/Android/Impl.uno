@@ -9,51 +9,33 @@ using Uno.Threading;
 
 namespace Fuse.Security
 {
-    extern(Android) internal class AndCert : Certificate
+    extern(android) internal class AndCert : Certificate
     {
         Java.Object _handle;
-        bool _valid;
-        bool _validated;
 
         public AndCert(Java.Object handle)
         {
             _handle = handle;
-            _validated = false;
         }
-
-        public bool Valid
-        {
-            get
-            {
-                if (!_validated)
-                {
-                    _valid = Validate(_handle);
-                }
-                return _valid;
-            }
-        }
-
-        [Foreign(Language.Java)]
-        static bool Validate(Java.Object cert)
-        @{
-            return false;
-        @}
     }
 
     [ForeignInclude(Language.Java,
                     "java.lang.Exception",
                     "android.security.KeyChain",
                     "java.security.cert.X509Certificate",
-                    "android.app.Activity")]
+                    "android.app.Activity",
+                    "android.os.AsyncTask")]
     extern(android)
-    internal class GetCertificateFromKeyStore : Promise<Certificate>
+    internal class GetCertificateChainFromKeyStore : Promise<CertificateChain>
     {
+        List<Certificate> _wip = new List<Certificate>();
+
         [Foreign(Language.Java)]
-        public GetCertificateFromKeyStore(string name)
+        public GetCertificateChainFromKeyStore(string name)
         @{
             if (name == null)
             {
-                @{GetCertificateFromKeyStore:Of(_this).Reject(string):Call("GetCertificateFromKeyStore requires that the certificate name is provided")};
+                @{GetCertificateChainFromKeyStore:Of(_this).Reject(string):Call("GetCertificateChainFromKeyStore requires that the certificate name is provided")};
                 return;
             }
 
@@ -65,17 +47,74 @@ namespace Fuse.Security
                     try
                     {
                         X509Certificate[] chain = KeyChain.getCertificateChain(com.fuse.Activity.getRootActivity(), name);
-                        UnoObject cert = @{AndCert(Java.Object):New(chain)};
-                        @{GetCertificateFromKeyStore:Of(_this).Resolve(Certificate):Call(cert)};
+
+                        for (X509Certificate cert: chain)
+                        {
+                            @{GetCertificateChainFromKeyStore:Of(_this).AddCert(Java.Object):Call(cert)};
+                        }
+
+                        @{GetCertificateChainFromKeyStore:Of(_this).Resolve():Call()};
                     }
                     catch (Exception e)
                     {
-                        @{GetCertificateFromKeyStore:Of(_this).Reject(string):Call("Could not aquire certificate with name '" + name + "'\nReason" + e.getMessage())};
+                        @{GetCertificateChainFromKeyStore:Of(_this).Reject(string):Call("Could not aquire certificate with name '" + name + "'\nReason" + e.getMessage())};
                     }
                     return null;
                 }
             }.execute();
         @}
+
+        void AddCert(Java.Object cert)
+        {
+            _wip.Add(new AndCert(cert));
+        }
+
+        void Resolve() { Resolve(new CertificateChain(_wip)); }
+
         void Reject(string reason) { Reject(new Exception(reason)); }
+    }
+
+
+    [ForeignInclude(Language.Java,
+                    "android.security.KeyChain",
+                    "android.content.Intent")]
+    extern(android)
+    internal class AddPKCS12ToKeyStore : Promise<bool>
+    {
+        public AddPKCS12ToKeyStore(string name, byte[] data)
+        {
+            if (name == null || data == null)
+            {
+                Reject("AddPKCS12ToKeyStore requires that the name & data are provided");
+            }
+            else
+            {
+                global::Android.ActivityUtils.StartActivity(MakeIntent(name, data), onResult);
+            }
+        }
+
+        [Foreign(Language.Java)]
+        void onResult(int resultCode, Java.Object intent, object info)
+        @{
+            if (resultCode == android.app.Activity.RESULT_OK)
+            {
+                @{AddPKCS12ToKeyStore:Of(_this).Resolve(bool):Call(true)};
+            }
+            else
+            {
+                @{AddPKCS12ToKeyStore:Of(_this).Reject(string):Call("Certificate install failed")};
+            }
+        @}
+
+        void Reject(string reason) { Reject(new Exception(reason)); }
+
+        [Foreign(Language.Java)]
+        Java.Object MakeIntent(string name, byte[] data)
+        @{
+            final byte[] keystore = data.copyArray();
+            Intent installIntent = KeyChain.createInstallIntent();
+            installIntent.putExtra(KeyChain.EXTRA_PKCS12, keystore);
+            return installIntent;
+        @}
     }
 }

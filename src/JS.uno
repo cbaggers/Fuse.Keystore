@@ -24,7 +24,8 @@ namespace Fuse.Security
 
         public object Something(Context c, object[] args)
         {
-            var foo = new GetCertificateFromKeyStore((string)args[0]);
+            var foo = new GetCertificateChainFromKeyStore((string)args[0]);
+            var bar = new AddPKCS12ToKeyStore(null, null);
             return null;
         }
     }

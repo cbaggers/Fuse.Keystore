@@ -5,11 +5,20 @@ using Uno.Collections;
 namespace Fuse.Security
 {
     extern(MSVC12)
-    internal class GetCertificateFromKeyStore : Promise<Certificate>
+    internal class GetCertificateChainFromKeyStore : Promise<CertificateChain>
     {
-        public GetCertificateFromKeyStore(string name)
+        public GetCertificateChainFromKeyStore(string name)
         {
-            Reject(new Exception("GetCertificateFromKeyStore is not implemented on this platform"));
+            Reject(new Exception("GetCertificateChainFromKeyStore is not implemented on this platform"));
+        }
+    }
+
+    extern(MSVC12)
+    internal class AddPKCS12ToKeyStore : Promise<bool>
+    {
+        public AddPKCS12ToKeyStore(string name, byte[] data)
+        {
+            Reject(new Exception("AddPKCS12ToKeyStore is not implemented on this platform"));
         }
     }
 }

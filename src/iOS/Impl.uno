@@ -15,7 +15,15 @@ namespace Fuse.Security
     [Set("TypeName", "SecCertificateRef")]
 	[Set("DefaultValue", "NULL")]
     [Set("FileExtension", "mm")]
-    public extern(iOS) struct SecCertRef {  IntPtr _dummy; }
+    public extern(iOS) struct SecCertRef
+    {
+        IntPtr _dummy;
+
+        public static bool IsNull(SecCertRef lhs)
+        {
+            return extern<bool>(lhs)"$0 == NULL";
+        }
+    }
 
     [Set("FileExtension", "mm")]
     extern(iOS) internal class iOSCert : Certificate
@@ -36,20 +44,21 @@ namespace Fuse.Security
 
     [Require("Entity","SecCertRef")]
     extern(iOS)
-    internal class GetCertificateFromKeyStore : Promise<Certificate>
+    internal class GetCertificateChainFromKeyStore : Promise<CertificateChain>
     {
-        public GetCertificateFromKeyStore(string name)
+        public GetCertificateChainFromKeyStore(string name)
         {
             if (name == null)
             {
-                Reject(new Exception("GetCertificateFromKeyStore requires that the certificate name is provided"));
+                Reject(new Exception("GetCertificateChainFromKeyStore requires that the certificate name is provided"));
             }
             else
             {
-                var foo = GetCertificateImpl(name);
-                if (foo!=null)
+                var certRef = GetCertificateImpl(name);
+                if (SecCertRef.IsNull(certRef))
                 {
-                    Resolve(new iOSCert(GetCertificateImpl(name)));
+                    var cert = new iOSCert(GetCertificateImpl(name));
+                    Resolve(new CertificateChain(cert));
                 }
                 else
                 {
@@ -60,7 +69,7 @@ namespace Fuse.Security
         }
 
         [Foreign(Language.ObjC)]
-        static public SecCertRef GetCertificateImpl(string name)
+        static SecCertRef GetCertificateImpl(string name)
         @{
             NSDictionary *getquery =
                 @{ (id)kSecClass:     (id)kSecClassCertificate,
@@ -80,6 +89,36 @@ namespace Fuse.Security
             {
                 return certificate;
             }
+        @}
+    }
+
+    [Require("Entity","SecCertRef")]
+    extern(iOS)
+    internal class AddPKCS12ToKeyStore : Promise<bool>
+    {
+        public AddPKCS12ToKeyStore(string name, byte[] data)
+        {
+            if (name == null || data == null)
+            {
+                Reject(new Exception("AddPKCS12ToKeyStore requires that the name & data are provided"));
+            }
+            else
+            {
+                Impl(name, data);
+                // if ()
+                // {
+                //     Resolve(new iOSCert(Impl(name, data)));
+                // }
+                // else
+                // {
+                //     Reject(new Exception("Could not aquire certificate with name '" + name));
+                // }
+            }
+        }
+
+        [Foreign(Language.ObjC)]
+        static void Impl(string name, byte[] data)
+        @{
         @}
     }
 }
