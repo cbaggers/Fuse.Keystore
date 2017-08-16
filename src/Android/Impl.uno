@@ -9,11 +9,11 @@ using Uno.Threading;
 
 namespace Fuse.Security
 {
-    extern(android) internal class AndCert : Certificate
+    extern(android) internal class AndroidCertificate : Certificate
     {
         Java.Object _handle;
 
-        public AndCert(Java.Object handle)
+        public AndroidCertificate(Java.Object handle)
         {
             _handle = handle;
         }
@@ -66,7 +66,7 @@ namespace Fuse.Security
 
         void AddCert(Java.Object cert)
         {
-            _wip.Add(new AndCert(cert));
+            _wip.Add(new AndroidCertificate(cert));
         }
 
         void Resolve() { Resolve(new CertificateChain(_wip)); }
@@ -116,5 +116,33 @@ namespace Fuse.Security
             installIntent.putExtra(KeyChain.EXTRA_PKCS12, keystore);
             return installIntent;
         @}
+    }
+
+
+    [ForeignInclude(Language.Java,
+                    "java.io.FileInputStream",
+                    "java.security.cert.CertificateFactory",
+                    "java.security.cert.X509Certificate")]
+    extern(android)
+    internal class LoadCertificateFromFile : Promise<Certificate>
+    {
+        [Foreign(Language.Java)]
+        public LoadCertificateFromFile(string path)
+        @{
+            try
+            {
+                CertificateFactory fact = CertificateFactory.getInstance("X.509");
+                FileInputStream is = new FileInputStream (path);
+                X509Certificate cer = (X509Certificate)fact.generateCertificate(is);
+                @{LoadCertificateFromFile:Of(_this).Resolve(Java.Object):Call(cer)};
+            }
+            catch (Exception e)
+            {
+                @{LoadCertificateFromFile:Of(_this).Reject(string):Call("Could not load certificate from '" + path + "'\nReason" + e.getMessage())};
+            }
+        @}
+
+        void Resolve(Java.Object cert) { Resolve(new AndroidCertificate(cert)); }
+        void Reject(string reason) { Reject(new Exception(reason)); }
     }
 }

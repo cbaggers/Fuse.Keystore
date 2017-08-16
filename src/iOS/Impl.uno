@@ -121,4 +121,23 @@ namespace Fuse.Security
         @{
         @}
     }
+
+    [Require("Entity","SecCertRef")]
+    extern(iOS)
+    internal class LoadCertificateFromFile : Promise<Certificate>
+    {
+        public LoadCertificateFromFile(string path)
+        {
+            var data = Uno.IO.File.ReadAllBytes(path);
+            var view = ForeignDataView.Create(data);
+            var cert = new iOSCert(Impl(view));
+            Resolve(cert);
+        }
+
+        [Foreign(Language.ObjC)]
+        static SecCertRef Impl(ForeignDataView view)
+        @{
+            return SecCertificateCreateWithData(NULL, view);
+        @}
+    }
 }

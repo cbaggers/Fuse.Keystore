@@ -15,7 +15,7 @@ namespace Fuse.Security
 
     public sealed class CertificateChain
     {
-        final List<Certificate> _certs;
+        readonly List<Certificate> _certs;
 
         public CertificateChain(IEnumerable<Certificate> chain)
         {

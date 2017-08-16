@@ -22,4 +22,13 @@ namespace Fuse.Security
             Reject(new Exception("AddPKCS12ToKeyStore is not implemented on this platform"));
         }
     }
+
+    extern(!android && !iOS && !MSVC12)
+    internal class LoadCertificateFromFile : Promise<Certificate>
+    {
+        public LoadCertificateFromFile(string path)
+        {
+            Reject(new Exception("LoadCertificateFromFile is not implemented on this platform"));
+        }
+    }
 }

@@ -26,6 +26,7 @@ namespace Fuse.Security
         {
             var foo = new GetCertificateChainFromKeyStore((string)args[0]);
             var bar = new AddPKCS12ToKeyStore(null, null);
+            var biscuits = new LoadCertificateFromFile("foo.crt");
             return null;
         }
     }
