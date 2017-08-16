@@ -9,7 +9,10 @@ using Uno.Threading;
 
 namespace Fuse.Security
 {
-    extern(android) internal class AndroidCertificate : Certificate
+    [ForeignInclude(Language.Java,
+                    "java.security.cert.X509Certificate")]
+    extern(android)
+    internal class AndroidCertificate : Certificate
     {
         Java.Object _handle;
 
@@ -17,6 +20,19 @@ namespace Fuse.Security
         {
             _handle = handle;
         }
+
+
+        public string Subject
+        {
+            get { return GetSubject(_handle); }
+        }
+
+        [Foreign(Language.Java)]
+        static string GetSubject(Java.Object handle)
+        @{
+            X509Certificate cert = (X509Certificate)handle;
+            return cert.getSubjectDN().getName();
+        @}
     }
 
     [ForeignInclude(Language.Java,

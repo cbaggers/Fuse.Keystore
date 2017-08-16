@@ -40,6 +40,16 @@ namespace Fuse.Security
         @{
             CFRelease(@{iOSCert:Of(_this)._handle});
         @}
+
+        [Foreign(Language.Java)]
+        public string Subject
+        {
+            get
+            @{
+                // ARC takes ownership
+                return (NSString*)CFBridgingRelease(SecCertificateCopySubjectSummary(@{_handle}));
+            @}
+        }
     }
 
     [Require("Entity","SecCertRef")]
@@ -137,7 +147,7 @@ namespace Fuse.Security
         [Foreign(Language.ObjC)]
         static SecCertRef Impl(ForeignDataView view)
         @{
-            return SecCertificateCreateWithData(NULL, view);
+            return SecCertificateCreateWithData(NULL, (__bridge CFDataRef)view);
         @}
     }
 }

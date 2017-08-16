@@ -10,7 +10,7 @@ namespace Fuse.Security
 {
     public interface Certificate
     {
-        //bool IsValid { get; }
+        string Subject { get; }
     }
 
     public sealed class CertificateChain
