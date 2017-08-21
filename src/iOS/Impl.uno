@@ -150,4 +150,13 @@ namespace Fuse.Security
             return SecCertificateCreateWithData(NULL, (__bridge CFDataRef)view);
         @}
     }
+
+    extern(iOS)
+    internal class PickCertificate : Promise<string>
+    {
+        public PickCertificate()
+        {
+            Reject(new Exception("PickCertificate is not implemented on this platform"));
+        }
+    }
 }

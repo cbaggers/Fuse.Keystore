@@ -161,4 +161,39 @@ namespace Fuse.Security
         void Resolve(Java.Object cert) { Resolve(new AndroidCertificate(cert)); }
         void Reject(string reason) { Reject(new Exception(reason)); }
     }
+
+    [ForeignInclude(Language.Java,
+                    "java.security.Principal",
+                    "android.security.KeyChain",
+                    "android.security.KeyChainAliasCallback")]
+    extern(android)
+    internal class PickCertificate : Promise<string>
+    {
+        [Foreign(Language.Java)]
+        public PickCertificate()
+        @{
+            final String[] keyTypes = null;
+            final Principal[] issuers = null;
+            final String host = null;
+            final int port = -1;
+            final String preselectAlias = null;
+            KeyChain.choosePrivateKeyAlias(com.fuse.Activity.getRootActivity(),
+                new KeyChainAliasCallback()
+                {
+                    @Override public void alias(@Nullable String alias)
+                    {
+                        if (alias == null)
+                        {
+                            @{PickCertificate:Of(_this).Reject(string):Call("Cancelled")};
+                        }
+                        else
+                        {
+                            @{PickCertificate:Of(_this).Resolve(string):Call(alias)};
+                        }
+                    }
+                }, keyTypes, issuers, host, port, preselectAlias);
+        @}
+
+        void Reject(string reason) { Reject(new Exception(reason)); }
+    }
 }
