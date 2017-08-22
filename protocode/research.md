@@ -87,7 +87,7 @@ evaluate the issuers cert back to a trusted root authority.
 
 Cert can be obtained from an identity (in PKCS #12 file), DER-encoded data, or the keychain.
 
-DER file is unencypted by PKCS is meant to be secure and can be loaded into the keychain
+DER file is unencypted and PKCS is meant to be secure and can be loaded into the keychain
 
 The opaque SecCertificateRef type seems to be what is used most places in the api (except for exchange format naturally)
 

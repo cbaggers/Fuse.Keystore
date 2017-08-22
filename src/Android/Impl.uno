@@ -196,4 +196,13 @@ namespace Fuse.Security
 
         void Reject(string reason) { Reject(new Exception(reason)); }
     }
+
+    extern(android)
+    internal class LoadCertificateFromPKCS : Promise<Certificate>
+    {
+        public LoadCertificateFromPKCS(string path, string password)
+        {
+            Reject(new Exception("PickCertificate is not implemented on this platform"));
+        }
+    }
 }

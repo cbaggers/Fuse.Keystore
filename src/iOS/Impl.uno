@@ -151,6 +151,50 @@ namespace Fuse.Security
         @}
     }
 
+    [Require("Entity","SecCertRef")]
+    extern(iOS)
+    internal class LoadCertificateFromPKCS : Promise<Certificate>
+    {
+        public LoadCertificateFromFile(string path, string password)
+        {
+            var data = Uno.IO.File.ReadAllBytes(path);
+            var view = ForeignDataView.Create(data);
+            var cert = new iOSCert(Impl(view, password));
+            Resolve(cert);
+        }
+
+        [Foreign(Language.ObjC)]
+        static SecCertRef Impl(ForeignDataView view, string password)
+        @{
+            NSDictionary* options =
+                @{ // A passphrase (represented by a CFStringRef object) to be
+                   // used when exporting to or importing from PKCS#12 format.
+                   (id)kSecImportExportPassphrase: password,
+
+                   // A keychain represented by a SecKeychainRef to be used as
+                   // the target when importing or exporting.
+                   // (id)kSecImportExportKeychain: …,
+
+                   // An initial access control list represented by a SecAccessRef object.
+                   // (id)kSecImportExportAccess: …,
+                };
+            CFArrayRef _Nullable* items;
+            OSStatus status = SecPKCS12Import((__bridge CFDataRef)view,
+                                              (__bridge CFDictionaryRef)options,
+                                              items);
+            if (status != 0 || items == NULL)
+            {
+                return NULL;
+            }
+            else
+            {
+                CFDictionaryRef ident = CFArrayGetValueAtIndex(items, 0);
+                const void* tempIdentity = CFDictionaryGetValue(ident, kSecImportItemIdentity);
+                return (SecIdentityRef)tempIdentity;
+            }
+        @}
+    }
+
     extern(iOS)
     internal class PickCertificate : Promise<string>
     {
