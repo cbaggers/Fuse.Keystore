@@ -32,7 +32,14 @@ namespace Fuse.Security
 
         public iOSCert(SecCertRef handle)
         {
-            _handle = handle;
+            if (SecCertRef.IsNull(handle))
+            {
+                throw new Exception("SecCertRef was null couldnt make iOSCert");
+            }
+            else
+            {
+                _handle = handle;
+            }
         }
 
         [Foreign(Language.ObjC)]
@@ -66,9 +73,9 @@ namespace Fuse.Security
             else
             {
                 var certRef = GetCertificateImpl(name);
-                if (SecCertRef.IsNull(certRef))
+                if (!SecCertRef.IsNull(certRef))
                 {
-                    var cert = new iOSCert(GetCertificateImpl(name));
+                    var cert = new iOSCert(certRef);
                     Resolve(new CertificateChain(cert));
                 }
                 else
@@ -143,8 +150,16 @@ namespace Fuse.Security
 
         public LoadCertificateFromBytes(ForeignDataView view)
         {
-            var cert = new iOSCert(Impl(view));
-            Resolve(cert);
+            var certRef = Impl(view);
+            if (!SecCertRef.IsNull(certRef))
+            {
+                var cert = new iOSCert(certRef);
+                Resolve(cert);
+            }
+            else
+            {
+                Reject(new Exception("LoadCertificateFromBytes Failed. Certificate was null"));
+            }
         }
 
         [Foreign(Language.ObjC)]
@@ -163,8 +178,16 @@ namespace Fuse.Security
         {
             var data = Uno.IO.File.ReadAllBytes(path);
             var view = ForeignDataView.Create(data);
-            var cert = new iOSCert(Impl(view, password));
-            Resolve(cert);
+            var certRef = Impl(view, password);
+            if (!SecCertRef.IsNull(certRef))
+            {
+                var cert = new iOSCert(certRef);
+                Resolve(cert);
+            }
+            else
+            {
+                Reject(new Exception("LoadCertificateFromPKCS Failed. Certificate was null"));
+            }
         }
 
         [Foreign(Language.ObjC)]

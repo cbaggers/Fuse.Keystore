@@ -1,6 +1,7 @@
 using Uno;
 using Uno.IO;
 using Uno.Testing;
+using Uno.Threading;
 using Fuse.Security;
 
 namespace KeyStoreTests
@@ -8,21 +9,16 @@ namespace KeyStoreTests
     public class CertTests
     {
         [Test]
-        public void LoadFromBytes0()
+        public void LoadCertFromBytes0()
         {
             var certBytes = import BundleFile("certs/client/sender.crt").ReadAllBytes();
-            var promise = new LoadCertificateFromBytes(certBytes);
-            promise.Then(ShouldSucceed, ShouldntFail);
+            FutureTest<Certificate>.Execute(new LoadCertificateFromBytes(certBytes), Should.Succeed);
         }
 
-        void ShouldSucceed(Certificate cert)
+        [Test]
+        public void PickCert0()
         {
-            Assert.IsTrue(cert!=null);
-        }
-
-        void ShouldntFail(Exception ex)
-        {
-            Assert.AreEqual(1, 0);
+            FutureTest<string>.Execute(new PickCertificate(), Should.Succeed);
         }
     }
 }
