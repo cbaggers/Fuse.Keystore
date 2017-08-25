@@ -36,4 +36,13 @@ namespace Fuse.Security
             get { return _certs[i]; }
         }
     }
+
+    public static class Helpers
+    {
+        public static Promise<Certificate> LoadCertificateFromFile(string path)
+        {
+            var data = Uno.IO.File.ReadAllBytes(path);
+            return new LoadCertificateFromBytes(data);
+        }
+    }
 }

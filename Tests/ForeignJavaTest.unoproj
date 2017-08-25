@@ -1,0 +1,13 @@
+{
+  "Packages": [
+    "Uno.Threading",
+    "Uno.Testing",
+    "UnoCore"
+  ],
+  "Projects": [
+    "../src/Fuse.KeyStore.unoproj"
+  ],
+  "Includes": [
+    "*.uno",
+  ]
+}

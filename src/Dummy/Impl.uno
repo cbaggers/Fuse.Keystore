@@ -6,7 +6,7 @@ using Uno.Threading;
 namespace Fuse.Security
 {
     extern(!android && !iOS)
-    internal class GetCertificateChainFromKeyStore : Promise<CertificateChain>
+    public class GetCertificateChainFromKeyStore : Promise<CertificateChain>
     {
         public GetCertificateChainFromKeyStore(string name)
         {
@@ -15,7 +15,7 @@ namespace Fuse.Security
     }
 
     extern(!android && !iOS)
-    internal class AddPKCS12ToKeyStore : Promise<bool>
+    public class AddPKCS12ToKeyStore : Promise<bool>
     {
         public AddPKCS12ToKeyStore(string name, byte[] data)
         {
@@ -24,16 +24,16 @@ namespace Fuse.Security
     }
 
     extern(!android && !iOS)
-    internal class LoadCertificateFromFile : Promise<Certificate>
+    public class LoadCertificateFromBytes : Promise<Certificate>
     {
-        public LoadCertificateFromFile(string path)
+        public LoadCertificateFromBytes(byte[] data)
         {
-            Reject(new Exception("LoadCertificateFromFile is not implemented on this platform"));
+            Reject(new Exception("LoadCertificateFromBytes is not implemented on this platform"));
         }
     }
 
     extern(!android && !iOS)
-    internal class PickCertificate : Promise<string>
+    public class PickCertificate : Promise<string>
     {
         public PickCertificate()
         {
@@ -42,7 +42,7 @@ namespace Fuse.Security
     }
 
     extern(!android && !iOS)
-    internal class LoadCertificateFromPKCS : Promise<Certificate>
+    public class LoadCertificateFromPKCS : Promise<Certificate>
     {
         public LoadCertificateFromPKCS(string path, string password)
         {

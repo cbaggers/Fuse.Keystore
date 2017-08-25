@@ -26,7 +26,7 @@ namespace Fuse.Security
     }
 
     [Set("FileExtension", "mm")]
-    extern(iOS) internal class iOSCert : Certificate
+    extern(iOS) public class iOSCert : Certificate
     {
         SecCertRef _handle;
 
@@ -53,8 +53,9 @@ namespace Fuse.Security
     }
 
     [Require("Entity","SecCertRef")]
+    [Set("FileExtension", "mm")]
     extern(iOS)
-    internal class GetCertificateChainFromKeyStore : Promise<CertificateChain>
+    public class GetCertificateChainFromKeyStore : Promise<CertificateChain>
     {
         public GetCertificateChainFromKeyStore(string name)
         {
@@ -103,8 +104,9 @@ namespace Fuse.Security
     }
 
     [Require("Entity","SecCertRef")]
+    [Set("FileExtension", "mm")]
     extern(iOS)
-    internal class AddPKCS12ToKeyStore : Promise<bool>
+    public class AddPKCS12ToKeyStore : Promise<bool>
     {
         public AddPKCS12ToKeyStore(string name, byte[] data)
         {
@@ -133,13 +135,14 @@ namespace Fuse.Security
     }
 
     [Require("Entity","SecCertRef")]
+    [Set("FileExtension", "mm")]
     extern(iOS)
-    internal class LoadCertificateFromFile : Promise<Certificate>
+    public class LoadCertificateFromBytes : Promise<Certificate>
     {
-        public LoadCertificateFromFile(string path)
+        public LoadCertificateFromBytes(byte[] data) : this(ForeignDataView.Create(data)) {}
+
+        public LoadCertificateFromBytes(ForeignDataView view)
         {
-            var data = Uno.IO.File.ReadAllBytes(path);
-            var view = ForeignDataView.Create(data);
             var cert = new iOSCert(Impl(view));
             Resolve(cert);
         }
@@ -152,10 +155,11 @@ namespace Fuse.Security
     }
 
     [Require("Entity","SecCertRef")]
+    [Set("FileExtension", "mm")]
     extern(iOS)
-    internal class LoadCertificateFromPKCS : Promise<Certificate>
+    public class LoadCertificateFromPKCS : Promise<Certificate>
     {
-        public LoadCertificateFromFile(string path, string password)
+        public LoadCertificateFromPKCS(string path, string password)
         {
             var data = Uno.IO.File.ReadAllBytes(path);
             var view = ForeignDataView.Create(data);
@@ -195,8 +199,9 @@ namespace Fuse.Security
         @}
     }
 
+    [Set("FileExtension", "mm")]
     extern(iOS)
-    internal class PickCertificate : Promise<string>
+    public class PickCertificate : Promise<string>
     {
         public PickCertificate()
         {

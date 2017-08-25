@@ -12,7 +12,7 @@ namespace Fuse.Security
     [ForeignInclude(Language.Java,
                     "java.security.cert.X509Certificate")]
     extern(android)
-    internal class AndroidCertificate : Certificate
+    public class AndroidCertificate : Certificate
     {
         Java.Object _handle;
 
@@ -42,7 +42,7 @@ namespace Fuse.Security
                     "android.app.Activity",
                     "android.os.AsyncTask")]
     extern(android)
-    internal class GetCertificateChainFromKeyStore : Promise<CertificateChain>
+    public class GetCertificateChainFromKeyStore : Promise<CertificateChain>
     {
         List<Certificate> _wip = new List<Certificate>();
 
@@ -95,7 +95,7 @@ namespace Fuse.Security
                     "android.security.KeyChain",
                     "android.content.Intent")]
     extern(android)
-    internal class AddPKCS12ToKeyStore : Promise<bool>
+    public class AddPKCS12ToKeyStore : Promise<bool>
     {
         public AddPKCS12ToKeyStore(string name, byte[] data)
         {
@@ -136,25 +136,37 @@ namespace Fuse.Security
 
 
     [ForeignInclude(Language.Java,
-                    "java.io.FileInputStream",
+                    "java.io.InputStream",
                     "java.security.cert.CertificateFactory",
                     "java.security.cert.X509Certificate")]
     extern(android)
-    internal class LoadCertificateFromFile : Promise<Certificate>
+    public class LoadCertificateFromBytes : Promise<Certificate>
     {
+        public LoadCertificateFromBytes(byte[] data)
+        {
+            var buf = ForeignDataView.Create(data);
+            var inputStream = MakeBufferInputStream(buf);
+            LoadCertificateFromInputStream(inputStream);
+        }
+
         [Foreign(Language.Java)]
-        public LoadCertificateFromFile(string path)
+        static Java.Object MakeBufferInputStream(Java.Object buf) // UnoBackedByteBuffer buf
+        @{
+            return new com.fuse.android.ByteBufferInputStream((com.uno.UnoBackedByteBuffer)buf);
+        @}
+
+        [Foreign(Language.Java)]
+        void LoadCertificateFromInputStream(Java.Object inputStream)
         @{
             try
             {
                 CertificateFactory fact = CertificateFactory.getInstance("X.509");
-                FileInputStream is = new FileInputStream (path);
-                X509Certificate cer = (X509Certificate)fact.generateCertificate(is);
-                @{LoadCertificateFromFile:Of(_this).Resolve(Java.Object):Call(cer)};
+                X509Certificate cer = (X509Certificate)fact.generateCertificate((InputStream)inputStream);
+                @{LoadCertificateFromBytes:Of(_this).Resolve(Java.Object):Call(cer)};
             }
             catch (Exception e)
             {
-                @{LoadCertificateFromFile:Of(_this).Reject(string):Call("Could not load certificate from '" + path + "'\nReason" + e.getMessage())};
+                @{LoadCertificateFromBytes:Of(_this).Reject(string):Call("Could not load certificate from byte\nReason" + e.getMessage())};
             }
         @}
 
@@ -167,7 +179,7 @@ namespace Fuse.Security
                     "android.security.KeyChain",
                     "android.security.KeyChainAliasCallback")]
     extern(android)
-    internal class PickCertificate : Promise<string>
+    public class PickCertificate : Promise<string>
     {
         [Foreign(Language.Java)]
         public PickCertificate()
@@ -180,7 +192,7 @@ namespace Fuse.Security
             KeyChain.choosePrivateKeyAlias(com.fuse.Activity.getRootActivity(),
                 new KeyChainAliasCallback()
                 {
-                    @Override public void alias(@Nullable String alias)
+                    @Override public void alias(String alias)
                     {
                         if (alias == null)
                         {
@@ -198,7 +210,7 @@ namespace Fuse.Security
     }
 
     extern(android)
-    internal class LoadCertificateFromPKCS : Promise<Certificate>
+    public class LoadCertificateFromPKCS : Promise<Certificate>
     {
         public LoadCertificateFromPKCS(string path, string password)
         {
