@@ -11,7 +11,7 @@ namespace KeyStoreTests
         [Test]
         public void LoadCertFromBytes0()
         {
-            var certBytes = import BundleFile("certs/client/sender.crt").ReadAllBytes();
+            var certBytes = import BundleFile("certs/client/senderDER.crt").ReadAllBytes();
             FutureTest<Certificate>.Execute(new LoadCertificateFromBytes(certBytes), Should.Succeed);
         }
 

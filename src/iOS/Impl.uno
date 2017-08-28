@@ -83,7 +83,6 @@ namespace Fuse.Security
                     Reject(new Exception("Could not aquire certificate with name '" + name));
                 }
             }
-
         }
 
         [Foreign(Language.ObjC)]
