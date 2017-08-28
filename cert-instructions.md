@@ -55,6 +55,8 @@ Check results
 
     chmod 444 server/receiver.crt
 
+    openssl x509 -outform DER -in receiver.crt -out receiverDER.crt
+
     openssl verify -CAfile ca/ca.crt server/receiver.crt
 
     openssl pkcs12 -export -in server/receiver.crt -inkey server/receiver.key -out server/receiver.pfx -CAfile ca/ca.crt -chain
@@ -66,7 +68,7 @@ Check results
 
     openssl genrsa -out client/sender.key 2048
 
-chmod 400 client/sender.key
+    chmod 400 client/sender.key
 
     openssl req -new -key client/sender.key -out client/sender.csr
 
@@ -83,6 +85,8 @@ chmod 400 client/sender.key
     openssl x509 -req -days 365 -sha256 -in client/sender.csr -CA ca/ca.crt -CAkey ca/ca.key -set_serial 2 -out client/sender.crt
 
     chmod 444 client/sender.crt
+
+    openssl x509 -outform DER -in sender.crt -out senderDER.crt
 
     openssl verify -CAfile ca/ca.crt client/sender.crt
 
