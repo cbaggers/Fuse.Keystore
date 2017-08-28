@@ -15,10 +15,9 @@ namespace Fuse.Security
     [Set("TypeName", "SecCertificateRef")]
 	[Set("DefaultValue", "NULL")]
     [Set("FileExtension", "mm")]
+    [TargetSpecificType]
     public extern(iOS) struct SecCertRef
     {
-        IntPtr _dummy;
-
         public static bool IsNull(SecCertRef lhs)
         {
             return extern<bool>(lhs)"$0 == NULL";
@@ -42,10 +41,15 @@ namespace Fuse.Security
             }
         }
 
-        [Foreign(Language.ObjC)]
         ~iOSCert()
+        {
+            ReleaseCert(_handle);
+        }
+
+        [Foreign(Language.ObjC)]
+        static void ReleaseCert(SecCertRef handle)
         @{
-            CFRelease(@{iOSCert:Of(_this)._handle});
+            CFRelease(handle);
         @}
 
         [Foreign(Language.Java)]
