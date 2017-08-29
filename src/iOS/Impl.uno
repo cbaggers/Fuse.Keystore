@@ -175,11 +175,10 @@ namespace Fuse.Security
     [Require("Entity","SecCertRef")]
     [Set("FileExtension", "mm")]
     extern(iOS)
-    public class LoadCertificateFromPKCS : Promise<Certificate>
+    public class LoadPKCS12FromBytes : Promise<Certificate>
     {
-        public LoadCertificateFromPKCS(string path, string password)
+        public LoadPKCS12FromBytes(byte[] data, string password)
         {
-            var data = Uno.IO.File.ReadAllBytes(path);
             var view = ForeignDataView.Create(data);
             var certRef = Impl(view, password);
             if (!SecCertRef.IsNull(certRef))

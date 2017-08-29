@@ -20,6 +20,13 @@ namespace KeyStoreTests
         {
             FutureTest<string>.Execute(new PickCertificate(), Should.Succeed);
         }
+
+        [Test]
+        public void LoadPKCS12Identity0()
+        {
+            var pkcs12Bytes = import BundleFile("certs/client/senderDER.crt").ReadAllBytes();
+            FutureTest<Certificate>.Execute(new LoadPKCS12FromBytes(pkcs12Bytes, "1234"), Should.Succeed);
+        }
     }
 }
 

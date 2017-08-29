@@ -44,5 +44,11 @@ namespace Fuse.Security
             var data = Uno.IO.File.ReadAllBytes(path);
             return new LoadCertificateFromBytes(data);
         }
+
+        public static Promise<Certificate> LoadPKCS12FromFile(string path, string password)
+        {
+            var data = Uno.IO.File.ReadAllBytes(path);
+            return new LoadPKCS12FromBytes(data, password);
+        }
     }
 }
