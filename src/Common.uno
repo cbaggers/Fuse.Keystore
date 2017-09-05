@@ -8,6 +8,8 @@ using Uno.Compiler.ExportTargetInterop;
 
 namespace Fuse.Security
 {
+    public interface TrustContext {}
+
     public interface Certificate
     {
         string Subject { get; }

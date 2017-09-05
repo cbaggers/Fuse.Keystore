@@ -21,7 +21,6 @@ namespace Fuse.Security
             _handle = handle;
         }
 
-
         public string Subject
         {
             get { return GetSubject(_handle); }
@@ -33,6 +32,17 @@ namespace Fuse.Security
             X509Certificate cert = (X509Certificate)handle;
             return cert.getSubjectDN().getName();
         @}
+    }
+
+    extern(android)
+    public class AndroidTrustContext : TrustContext
+    {
+        Java.Object _handle;
+
+        public AndroidTrustContext(Java.Object handle)
+        {
+            _handle = handle;
+        }
     }
 
     [ForeignInclude(Language.Java,
@@ -73,7 +83,7 @@ namespace Fuse.Security
                     }
                     catch (Exception e)
                     {
-                        @{GetCertificateChainFromKeyStore:Of(_this).Reject(string):Call("Could not aquire certificate with name '" + name + "'\nReason" + e.getMessage())};
+                        @{GetCertificateChainFromKeyStore:Of(_this).Reject(string):Call("Could not aquire certificate with name '" + name + "'\nReason: " + e.getMessage())};
                     }
                     return null;
                 }
@@ -166,11 +176,85 @@ namespace Fuse.Security
             }
             catch (Exception e)
             {
-                @{LoadCertificateFromBytes:Of(_this).Reject(string):Call("Could not load certificate from byte\nReason" + e.getMessage())};
+                @{LoadCertificateFromBytes:Of(_this).Reject(string):Call("Could not load certificate from byte\nReason: " + e.getMessage())};
             }
         @}
 
         void Resolve(Java.Object cert) { Resolve(new AndroidCertificate(cert)); }
+        void Reject(string reason) { Reject(new Exception(reason)); }
+    }
+
+    [ForeignInclude(Language.Java,
+                    "java.security.KeyStore",
+                    "java.security.KeyStoreException",
+                    "java.security.NoSuchAlgorithmException",
+                    "java.security.cert.Certificate",
+                    "javax.net.ssl.TrustManagerFactory")]
+    extern(android)
+    public class TrustContextFromCACertificate : Promise<TrustContext>
+    {
+        [Foreign(Language.Java)]
+        public TrustContextFromCACertificate(Certificate cert)
+        @{
+            Certificate caCert = (Certificate)@{AndroidCertificate:Of(cert)._handle};
+
+            // Create a KeyStore containing our trusted CAs
+            String keyStoreType = KeyStore.getDefaultType();
+            KeyStore keyStore = null;
+            try
+            {
+                keyStore = KeyStore.getInstance(keyStoreType);
+            }
+            catch (KeyStoreException e)
+            {
+                @{TrustContextFromCACertificate:Of(_this).Reject(string):Call("Could not get keystore\nReason: " + e.getMessage())};
+            }
+            try
+            {
+                keyStore.load(null, null);
+            }
+            catch (Exception e)
+            {
+                @{TrustContextFromCACertificate:Of(_this).Reject(string):Call("Could not load keystore\nReason: " + e.getMessage())};
+            }
+            try
+            {
+                keyStore.setCertificateEntry("ca", caCert);
+            }
+            catch (Exception e)
+            {
+                @{TrustContextFromCACertificate:Of(_this).Reject(string):Call("Could not add certificate to TrustContext\nReason: " + e.getMessage())};
+            }
+
+
+            // Create a TrustManager that trusts the CAs in our KeyStore
+            String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
+            TrustManagerFactory tmf = null;
+            try
+            {
+                tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
+            }
+            catch (NoSuchAlgorithmException e)
+            {
+                @{TrustContextFromCACertificate:Of(_this).Reject(string):Call("Could not make TrustContext\nReason: " + e.getMessage())};
+            }
+            try
+            {
+                tmf.init(keyStore);
+            }
+            catch (KeyStoreException e)
+            {
+                @{TrustContextFromCACertificate:Of(_this).Reject(string):Call("Could not init TrustContext (on java side)\nReason: " + e.getMessage())};
+            }
+
+            @{TrustContextFromCACertificate:Of(_this).Resolve(Java.Object):Call(tmf)};
+        @}
+
+        void Resolve(Java.Object ctx)
+        {
+            Resolve(new AndroidTrustContext(ctx));
+        }
+
         void Reject(string reason) { Reject(new Exception(reason)); }
     }
 
@@ -212,9 +296,9 @@ namespace Fuse.Security
     extern(android)
     public class LoadPKCS12FromBytes : Promise<Certificate>
     {
-        public LoadPKCS12FromBytes(string path, string password)
+        public LoadPKCS12FromBytes(byte[] data, string password)
         {
-            Reject(new Exception("PickCertificate is not implemented on this platform"));
+            Reject(new Exception("LoadPKCS12FromBytes is not implemented on this platform"));
         }
     }
 }

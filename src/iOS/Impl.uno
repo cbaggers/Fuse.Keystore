@@ -13,27 +13,75 @@ namespace Fuse.Security
     [Require("Source.Include", "Security/Security.h")]
     [Set("Include", "Security/Security.h")]
     [Set("TypeName", "SecCertificateRef")]
-	[Set("DefaultValue", "NULL")]
+    [Set("DefaultValue", "NULL")]
     [Set("FileExtension", "mm")]
     [TargetSpecificType]
-    public extern(iOS) struct SecCertRef
+    public extern(iOS) struct SecCertHandle
     {
-        public static bool IsNull(SecCertRef lhs)
+        public static bool IsNull(SecCertHandle lhs)
         {
             return extern<bool>(lhs)"$0 == NULL";
         }
     }
 
+    [Require("Xcode.Framework", "Security.framework")]
+    [Require("Source.Include", "Security/Security.h")]
+    [Set("Include", "Security/Security.h")]
+    [Set("TypeName", "SecTrustRef")]
+    [Set("DefaultValue", "NULL")]
+    [Set("FileExtension", "mm")]
+    [TargetSpecificType]
+    public extern(iOS) struct SecTrustHandle
+    {
+        public static bool IsNull(SecTrustHandle lhs)
+        {
+            return extern<bool>(lhs)"$0 == NULL";
+        }
+    }
+
+
+    extern(iOS)
+    public class iOSTrustContext : TrustContext
+    {
+        SecTrustHandle _handle;
+
+        public iOSTrustContext(SecTrustHandle handle)
+        {
+            if (SecTrustHandle.IsNull(handle))
+            {
+                throw new Exception("SecTrustHandle was null couldnt make iOSCert");
+            }
+            else
+            {
+                _handle = handle;
+            }
+        }
+
+        ~iOSTrustContext()
+        {
+            // Impl is in static function as otherwise tries to take ref to _this in a way which
+            // causes an exception as we are in the uno destructor codepath
+            ReleaseHandle(_handle);
+        }
+
+        [Foreign(Language.ObjC)]
+        static void ReleaseHandle(SecTrustHandle handle)
+        @{
+            CFRelease(handle);
+        @}
+    }
+
+
     [Set("FileExtension", "mm")]
     extern(iOS) public class iOSCert : Certificate
     {
-        SecCertRef _handle;
+        SecCertHandle _handle;
 
-        public iOSCert(SecCertRef handle)
+        public iOSCert(SecCertHandle handle)
         {
-            if (SecCertRef.IsNull(handle))
+            if (SecCertHandle.IsNull(handle))
             {
-                throw new Exception("SecCertRef was null couldnt make iOSCert");
+                throw new Exception("SecCertHandle was null couldnt make iOSCert");
             }
             else
             {
@@ -47,7 +95,7 @@ namespace Fuse.Security
         }
 
         [Foreign(Language.ObjC)]
-        static void ReleaseCert(SecCertRef handle)
+        static void ReleaseCert(SecCertHandle handle)
         @{
             CFRelease(handle);
         @}
@@ -63,7 +111,8 @@ namespace Fuse.Security
         }
     }
 
-    [Require("Entity","SecCertRef")]
+
+    [Require("Entity","SecCertHandle")]
     [Set("FileExtension", "mm")]
     extern(iOS)
     public class GetCertificateChainFromKeyStore : Promise<CertificateChain>
@@ -77,7 +126,7 @@ namespace Fuse.Security
             else
             {
                 var certRef = GetCertificateImpl(name);
-                if (!SecCertRef.IsNull(certRef))
+                if (!SecCertHandle.IsNull(certRef))
                 {
                     var cert = new iOSCert(certRef);
                     Resolve(new CertificateChain(cert));
@@ -90,7 +139,7 @@ namespace Fuse.Security
         }
 
         [Foreign(Language.ObjC)]
-        static SecCertRef GetCertificateImpl(string name)
+        static SecCertHandle GetCertificateImpl(string name)
         @{
             NSDictionary *getquery =
                 @{ (id)kSecClass:     (id)kSecClassCertificate,
@@ -113,7 +162,8 @@ namespace Fuse.Security
         @}
     }
 
-    [Require("Entity","SecCertRef")]
+
+    [Require("Entity","SecCertHandle")]
     [Set("FileExtension", "mm")]
     extern(iOS)
     public class AddPKCS12ToKeyStore : Promise<bool>
@@ -144,7 +194,7 @@ namespace Fuse.Security
         @}
     }
 
-    [Require("Entity","SecCertRef")]
+    [Require("Entity","SecCertHandle")]
     [Set("FileExtension", "mm")]
     extern(iOS)
     public class LoadCertificateFromBytes : Promise<Certificate>
@@ -154,7 +204,7 @@ namespace Fuse.Security
         public LoadCertificateFromBytes(ForeignDataView view)
         {
             var certRef = Impl(view);
-            if (!SecCertRef.IsNull(certRef))
+            if (!SecCertHandle.IsNull(certRef))
             {
                 var cert = new iOSCert(certRef);
                 Resolve(cert);
@@ -166,13 +216,14 @@ namespace Fuse.Security
         }
 
         [Foreign(Language.ObjC)]
-        static SecCertRef Impl(ForeignDataView view)
+        static SecCertHandle Impl(ForeignDataView view)
         @{
             return SecCertificateCreateWithData(NULL, (__bridge CFDataRef)view);
         @}
     }
 
-    [Require("Entity","SecCertRef")]
+
+    [Require("Entity","SecCertHandle")]
     [Set("FileExtension", "mm")]
     extern(iOS)
     public class LoadPKCS12FromBytes : Promise<Certificate>
@@ -181,7 +232,7 @@ namespace Fuse.Security
         {
             var view = ForeignDataView.Create(data);
             var certRef = Impl(view, password);
-            if (!SecCertRef.IsNull(certRef))
+            if (!SecCertHandle.IsNull(certRef))
             {
                 var cert = new iOSCert(certRef);
                 Resolve(cert);
@@ -193,7 +244,7 @@ namespace Fuse.Security
         }
 
         [Foreign(Language.ObjC)]
-        static SecCertRef Impl(ForeignDataView view, string password)
+        static SecCertHandle Impl(ForeignDataView view, string password)
         @{
             NSDictionary* options =
                 @{ // A passphrase (represented by a CFStringRef object) to be
@@ -207,17 +258,17 @@ namespace Fuse.Security
                    // An initial access control list represented by a SecAccessRef object.
                    // (id)kSecImportExportAccess: …,
                 };
-            CFArrayRef _Nullable* items;
+<            CFArrayRef items;
             OSStatus status = SecPKCS12Import((__bridge CFDataRef)view,
                                               (__bridge CFDictionaryRef)options,
-                                              items);
+                                              &items);
             if (status != 0 || items == NULL)
             {
                 return NULL;
             }
             else
             {
-                CFDictionaryRef ident = CFArrayGetValueAtIndex(items, 0);
+                CFDictionaryRef ident = (CFDictionaryRef)CFArrayGetValueAtIndex(items, 0);
                 const void* tempIdentity = CFDictionaryGetValue(ident, kSecImportItemIdentity);
                 return (SecIdentityRef)tempIdentity;
             }
@@ -232,5 +283,53 @@ namespace Fuse.Security
         {
             Reject(new Exception("PickCertificate is not implemented on this platform"));
         }
+    }
+
+    [Require("Entity","SecTrustHandle")]
+    [Require("Source.Include", "@{iOSCert:Include}")]
+    [Set("FileExtension", "mm")]
+    extern(iOS)
+    public class TrustContextFromCACertificate : Promise<TrustContext>
+    {
+        public TrustContextFromCACertificate(Certificate cert)
+        {
+            var trustRef = Impl(cert);
+            if (!SecTrustHandle.IsNull(trustRef))
+            {
+                var trust = new iOSTrustContext(trustRef);
+                Resolve(trust);
+            }
+            else
+            {
+                Reject(new Exception("LoadCertificateFromPKCS Failed. Certificate was null"));
+            }
+        }
+
+        [Foreign(Language.ObjC)]
+        static SecTrustHandle Impl(Certificate cert)
+        @{
+            // Make the chain. By only providing the one cert the system will
+            // search it's own cert stores for the rest
+            SecCertificateRef caCert = (SecCertificateRef)@{iOSCert:Of(cert)._handle};
+            NSArray* certArray = @[ (__bridge id)caCert ];
+
+            // create a policy
+            SecPolicyRef policy = SecPolicyCreateBasicX509();
+
+            // create the trust object
+            SecTrustRef trust = NULL;
+            OSStatus status = SecTrustCreateWithCertificates((__bridge CFTypeRef)certArray, policy, &trust);
+            if (policy) { CFRelease(policy); }   // Done with the policy object
+
+            //
+            if (status == errSecSuccess)
+            {
+                return trust;
+            }
+            else
+            {
+                return NULL;
+            }
+        @}
     }
 }

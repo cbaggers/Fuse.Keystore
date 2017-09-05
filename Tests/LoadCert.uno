@@ -15,18 +15,18 @@ namespace KeyStoreTests
             FutureTest<Certificate>.Execute(new LoadCertificateFromBytes(certBytes), Should.Succeed);
         }
 
-        [Test]
-        public void PickCert0()
-        {
-            FutureTest<string>.Execute(new PickCertificate(), Should.Succeed);
-        }
+        // [Test]
+        // public void PickCert0()
+        // {
+        //     FutureTest<string>.Execute(new PickCertificate(), Should.Succeed);
+        // }
 
-        [Test]
-        public void LoadPKCS12Identity0()
-        {
-            var pkcs12Bytes = import BundleFile("certs/client/senderDER.crt").ReadAllBytes();
-            FutureTest<Certificate>.Execute(new LoadPKCS12FromBytes(pkcs12Bytes, "1234"), Should.Succeed);
-        }
+        // [Test]
+        // public void LoadPKCS12Identity0()
+        // {
+        //     var pkcs12Bytes = import BundleFile("certs/client/sender.pfx").ReadAllBytes();
+        //     FutureTest<Certificate>.Execute(new LoadPKCS12FromBytes(pkcs12Bytes, "1234"), Should.Succeed);
+        // }
     }
 }
 
